@@ -22,7 +22,7 @@
           id="textarea"
           v-model="message"
           placeholder="Digite a mensagem aqui..."
-          rows="3"
+          rows="10"
           max-rows="6"
         ></b-form-textarea>
       </div>
@@ -38,6 +38,9 @@
         <div>
           <b-button type="submit" variant="primary">Enviar</b-button>
         </div>
+      </div>
+      <div class="pt-3">
+        <b-table striped hover :items="tableItems"></b-table>
       </div>
       <div class="footer pt-3">
         <p>
@@ -63,6 +66,7 @@ export default {
       reader: new FileReader(),
       message: "",
       sheetItems: [],
+      tableItems: [],
     };
   },
   methods: {
@@ -87,6 +91,7 @@ export default {
           if (roa.length) result[sheetName] = roa;
         });
         this.sheetItems = result;
+        this.tableItems = result[Object.keys(result)[0]];
         this.formatNumbers(workbook.SheetNames, result);
       };
 
