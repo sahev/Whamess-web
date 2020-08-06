@@ -51,6 +51,7 @@
 
 <script>
 import XLSX from "xlsx";
+import axios from "axios";
 
 export default {
   name: "ImportMessages",
@@ -61,6 +62,7 @@ export default {
       columns: [],
       reader: new FileReader(),
       message: "",
+      sheetItems: [],
     };
   },
   methods: {
@@ -73,7 +75,6 @@ export default {
         this.showAlertFileEmpty("Extensão não permitida");
         return;
       }
-      console.log(this.file);
       this.reader.onload = (e) => {
         var data = e.target.result;
         data = new Uint8Array(data);
@@ -85,33 +86,42 @@ export default {
           });
           if (roa.length) result[sheetName] = roa;
         });
+        this.sheetItems = result;
         this.formatNumbers(workbook.SheetNames, result);
       };
 
       this.reader.readAsArrayBuffer(this.file);
     },
     submmit() {
-      if (this.file === null || this.message === '') {
+      if (this.file === null || this.message === "") {
         this.showAlertFileEmpty("Favor preencher todos os campos!");
         return;
       }
+      axios
+        .post("http://localhost:3000/messages/send", {
+          columnSheet: this.sheetItems,
+          message: this.message,
+        })
+        .then((result) => {
+          console.log(result);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     },
     formatNumbers(sheetNames, result) {
-      sheetNames.map((sheet) => {
-        result[sheet].map((sheetItem, idx) => {
-          if (idx === 0) {
-            this.columns = sheetItem;
-            return;
-          }
-          console.log(sheetItem);
-        });
+      result[sheetNames[0]].map((sheetItem, idx) => {
+        if (idx === 0) {
+          this.columns = sheetItem;
+          return;
+        }
       });
     },
     clearAll() {
       this.reader.abort();
       this.file = null;
       this.columns = [];
-      this.message = '';
+      this.message = "";
     },
     showAlertFileEmpty(message) {
       this.$bvToast.toast(message, {
