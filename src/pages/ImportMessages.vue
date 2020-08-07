@@ -22,7 +22,7 @@
           id="textarea"
           v-model="message"
           placeholder="Digite a mensagem aqui..."
-          rows="10"
+          rows="3"
           max-rows="6"
         ></b-form-textarea>
       </div>
@@ -66,17 +66,16 @@ export default {
       reader: new FileReader(),
       message: "",
       sheetItems: [],
-      tableItems: [],
     };
   },
   methods: {
     sheetToJson() {
       if (this.file === null) {
-        this.showAlertFileEmpty("Favor adicionar um arquivo");
+        this.showAlertFileEmpty("Adicione um arquivo!");
         return;
       }
       if (this.file.name.split(".").pop() !== "xlsx") {
-        this.showAlertFileEmpty("Extensão não permitida");
+        this.showAlertFileEmpty("Extensão não permitida.");
         return;
       }
       this.reader.onload = (e) => {
