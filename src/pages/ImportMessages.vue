@@ -36,11 +36,14 @@
           >{{ column }}</b-button>
         </div>
         <div>
-          <b-button type="submit" variant="primary">Enviar</b-button>
+          <b-button type="submit" variant="primary">
+            <b-spinner v-if="isLoading" label="Spinning"></b-spinner>
+            <span v-else>Enviar</span>
+          </b-button>
         </div>
       </div>
       <div class="pt-3">
-        <b-table striped hover :items="tableItems"></b-table>
+        <b-table striped hover :items="sheetItems"></b-table>
       </div>
       <div class="footer pt-3">
         <p>
@@ -66,16 +69,17 @@ export default {
       reader: new FileReader(),
       message: "",
       sheetItems: [],
+      isLoading: false,
     };
   },
   methods: {
     sheetToJson() {
       if (this.file === null) {
-        this.showAlertFileEmpty("Adicione um arquivo!");
+        this.showAlert("Adicione um arquivo!", "warning");
         return;
       }
       if (this.file.name.split(".").pop() !== "xlsx") {
-        this.showAlertFileEmpty("Extensão não permitida.");
+        this.showAlert("Extensão não permitida.", "warning");
         return;
       }
       this.reader.onload = (e) => {
@@ -90,7 +94,7 @@ export default {
           if (roa.length) result[sheetName] = roa;
         });
         this.sheetItems = result;
-        this.tableItems = result[Object.keys(result)[0]];
+        this.sheetItems = result[Object.keys(result)[0]];
         this.formatNumbers(workbook.SheetNames, result);
       };
 
@@ -98,18 +102,23 @@ export default {
     },
     submmit() {
       if (this.file === null || this.message === "") {
-        this.showAlertFileEmpty("Favor preencher todos os campos!");
+        this.showAlert("Favor preencher todos os campos!", "warning");
         return;
       }
+      this.isLoading = true;
       axios
         .post("http://localhost:3000/messages/send", {
           columnSheet: this.sheetItems,
           message: this.message,
         })
         .then((result) => {
+          this.clearAll();
+          this.showAlert("Mensagens enviadas com sucesso!", "success");
+          this.isLoading = false;
           console.log(result);
         })
         .catch((err) => {
+          this.isLoading = false;
           console.log(err);
         });
     },
@@ -125,12 +134,22 @@ export default {
       this.reader.abort();
       this.file = null;
       this.columns = [];
+      this.sheetItems = [];
       this.message = "";
     },
-    showAlertFileEmpty(message) {
+    showAlert(message, status) {
       this.$bvToast.toast(message, {
-        title: "Atenção",
-        variant: "warning",
+        title: message === "success" ? "Sucesso" : "Atenção",
+        variant: status,
+        toaster: "b-toaster-bottom-right",
+        autoHideDelay: 5000,
+        appendToast: true,
+      });
+    },
+    showAlertSuccess(message) {
+      this.$bvToast.toast(message, {
+        title: "Sucesso",
+        variant: "success",
         toaster: "b-toaster-bottom-right",
         autoHideDelay: 5000,
         appendToast: true,
