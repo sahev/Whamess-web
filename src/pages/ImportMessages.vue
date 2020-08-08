@@ -25,6 +25,7 @@
             placeholder="Digite a mensagem aqui..."
             rows="3"
             max-rows="6"
+            ref="inputTextArea"
           ></b-form-textarea>
         </div>
         <div class="form-bottom pt-3">
@@ -33,7 +34,7 @@
               class="mr-2"
               v-for="(column, idx) in columns"
               :key="idx"
-              @click="addCustomMessage(column)"
+              @mousedown.prevent="addCustomMessage(column)"
             >{{ column }}</b-button>
           </div>
           <div>
@@ -70,7 +71,12 @@
     </b-container>
     <template v-slot:overlay>
       <div class="d-flex justify-content-center flex-column">
-        <atom-spinner class="align-self-center" :animation-duration="1000" :size="100" :color="'#000000'" />
+        <atom-spinner
+          class="align-self-center"
+          :animation-duration="1000"
+          :size="100"
+          :color="'#000000'"
+        />
         <b>{{ loadingMessage }}...</b>
       </div>
     </template>
@@ -80,7 +86,7 @@
 <script>
 import XLSX from "xlsx";
 import axios from "axios";
-import { AtomSpinner  } from "epic-spinners";
+import { AtomSpinner } from "epic-spinners";
 
 export default {
   name: "ImportMessages",
@@ -195,7 +201,17 @@ export default {
       });
     },
     addCustomMessage(message) {
-      this.message = `${this.message} {${message}}`;
+      const cursorPosition = this.$refs["inputTextArea"].selectionStart;
+      if (cursorPosition === 0) {
+        this.message = `${this.message} {${message}}`;
+      } else {
+        this.message = [
+          this.message.slice(0, cursorPosition),
+          `{${message}}`,
+          this.message.slice(cursorPosition),
+        ].join("");
+      }
+      this.$refs["inputTextArea"].focus()
     },
   },
 };
