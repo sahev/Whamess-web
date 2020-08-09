@@ -1,18 +1,27 @@
 <template>
   <div id="app">
-    <ImportMessages />
+    <router-link to="login"></router-link>
+    <router-link to="home"></router-link>
+    <router-view/>
   </div>
 </template>
 
 <script>
-import ImportMessages from "./pages/ImportMessages.vue";
+// import ImportMessages from "./pages/ImportMessages.vue";
+// import Login from "./pages/Login.vue";
+
+// export default {
+//   name: "App",
+//   components: {
+//     ImportMessages,
+//     Login
+//   },
+// };
 
 export default {
-  name: "App",
-  components: {
-    ImportMessages,
-  },
-};
+  name: 'app'
+}
+
 </script>
 
 <style>
