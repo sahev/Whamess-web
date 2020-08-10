@@ -1,16 +1,19 @@
 <template>
   <div id="app">
-    <ImportMessages />
+    <!-- <ImportMessages /> -->
+    <Login />
   </div>
 </template>
 
 <script>
-import ImportMessages from "./pages/ImportMessages.vue";
+// import ImportMessages from "./pages/ImportMessages";
+import Login from "./pages/login";
 
 export default {
   name: "App",
   components: {
-    ImportMessages,
+    // ImportMessages,
+    Login,
   },
 };
 </script>
