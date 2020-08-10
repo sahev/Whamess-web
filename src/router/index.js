@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import ImportMessages from '@/pages/ImportMessages.vue';
-import Login from '@/pages/Login.vue'
+import Login from '@/pages/login.vue'
 
 
 Vue.use(Router)
@@ -14,9 +14,9 @@ export default new Router({
       component: Login
     },
     {
-        path: '/home',
-        name: 'Home',
-        component: ImportMessages
-      }
+      path: '/home',
+      name: 'Home',
+      component: ImportMessages
+    }
   ]
 })
