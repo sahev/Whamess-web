@@ -1,7 +1,7 @@
 <template>
   <b-container class="login-page">
     <b-card bg-variant="light" text-variant="black" size="lg" class="login-card">
-        <h1>Whamess</h1>
+      <h1>Whamess</h1>
       <b-form @submit="onSubmit" @reset="onReset" class="m-4">
         <b-form-group class="align-self-start" id="input-group-1">
           <b-form-input
@@ -49,6 +49,8 @@
 </template>
 
 <script>
+import router from "../router";
+import axios from "axios";
 export default {
   name: "Login",
   data() {
@@ -57,13 +59,21 @@ export default {
         email: "",
         password: "",
       },
-      checkBoxLembrarMe: false,
+      checkBoxLembrarMe: true,
     };
   },
   methods: {
-    onSubmit() {
-      console.log("login");
+    async onSubmit() {
+      try {
+        let response = await axios.post("auth/login", this.login);
+        localStorage.setItem("token", response.data.access_token);
+        router.push("getqrCode");
+      } catch {
+        localStorage.removeItem("token");
+        alert('Usuário ou senha inválidos!');
+      }
     },
+
     onReset() {
       console.log("reset");
     },

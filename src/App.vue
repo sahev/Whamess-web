@@ -1,19 +1,20 @@
 <template>
   <div id="app">
-    <!-- <ImportMessages /> -->
-    <Login />
+    <router-view />    
+    <!-- <Login />
+    <ImportMessages /> -->
   </div>
 </template>
 
 <script>
 // import ImportMessages from "./pages/ImportMessages";
-import Login from "./pages/login";
+// import Login from "./pages/login";
 
 export default {
   name: "App",
   components: {
     // ImportMessages,
-    Login,
+    // Login,
   },
 };
 </script>
