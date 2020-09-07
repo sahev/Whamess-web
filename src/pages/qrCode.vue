@@ -23,9 +23,22 @@
         <img v-if="isLoading === false" :src="qrcodestring" />
       </div>
     </b-sidebar>
+    <div>
+      <b-button
+        v-b-toggle.sidebar-backdrop
+        variant="primary"
+        @click="getqrcode"
+      >Inicie aqui com QRCode</b-button>
+      <b-row class="text-center mt-3">
+        <b-col md="6">
+          <b-overlay :show="isLoading" class="d-inline-block" rounded="square">
+            <b-img thumbnail rounded="square" fluid :src="qrcodestring" alt="QRCode"></b-img>
+          </b-overlay>
+        </b-col>
+      </b-row>
+    </div>
   </div>
 </template>
-
 <script>
 import axios from "axios";
 import router from "../router";
@@ -45,6 +58,7 @@ export default {
       ],
       qrcodestring: "",
       isLoading: false,
+      show: false,
     };
   },
   methods: {
@@ -52,14 +66,14 @@ export default {
       const token = localStorage.getItem("token");
       this.isLoading = true;
       try {
-        let res = await axios.get(`http://localhost:3000/getqrcode/`, {
+        let res = await axios.get("getqrcode/", {
           headers: { Authorization: "Bearer " + token },
         });
         this.isLoading = false;
         this.qrcodestring = "data:image/png;base64, " + res.data.string;
       } catch {
         router.push("/");
-        alert('Sessão expirada!')
+        alert("Sessão expirada!");
       }
       //console.log(port);
     },

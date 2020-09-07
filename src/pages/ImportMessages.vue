@@ -61,6 +61,17 @@
             aria-controls="table"
           />
         </div>
+        <!-- SCAN QRCODE -->
+        <div>
+          <b-button v-b-modal.modal-1 @click="getqrcode">Código QR aqui!</b-button>
+          <b-modal id="modal-1" title="Aponte o celular aqui para capturar o código">
+            <b-overlay :show="isLoading" class="text-center position-relative" rounded="square">
+                <b-img thumbnail rounded="square" fluid :src="qrcodestring" alt="QRCode"></b-img>
+              </b-overlay>
+          </b-modal>
+
+        </div>
+        <!-- END SCAN QRCODE  -->
         <div class="footer pt-3">
           <p>
             Desenvolvido por
@@ -82,10 +93,10 @@
     </template>
   </b-overlay>
 </template>
-
 <script>
 import XLSX from "xlsx";
 import axios from "axios";
+import router from "../router";
 import { AtomSpinner } from "epic-spinners";
 
 export default {
@@ -105,6 +116,7 @@ export default {
       loadingMessage: "",
       paginationCurrentPage: 1,
       paginationPerPage: 10,
+      qrcodestring: '',
     };
   },
   computed: {
@@ -113,6 +125,21 @@ export default {
     },
   },
   methods: {
+    async getqrcode() {
+      const token = localStorage.getItem("token");
+      this.isLoading = true;
+      try {
+        let res = await axios.get("getqrcode/", {
+          headers: { Authorization: "Bearer " + token },
+        });
+        this.isLoading = false;
+        this.qrcodestring = "data:image/png;base64, " + res.data.string;
+      } catch {
+        router.push("/");
+        alert("Sessão expirada!");
+      }
+      //console.log(port);
+    },
     sheetToJson() {
       if (this.file === null) {
         this.showAlert("Adicione um arquivo!", "warning");
@@ -148,13 +175,17 @@ export default {
         this.showAlert("Favor preencher todos os campos!", "warning");
         return;
       }
+      const token = localStorage.getItem("token");
       this.isLoading = true;
       this.loadingMessage = "Enviando mensagens";
       axios
-        .post("http://localhost:3000/messages/send", {
+        .post("messages/send", {
           columnSheet: this.sheetItems,
           message: this.message,
-        })
+        }, 
+        {
+          headers: { Authorization: "Bearer " + token }
+          })
         .then((result) => {
           this.clearAll();
           this.showAlert("Mensagens enviadas com sucesso!", "success");
@@ -211,12 +242,11 @@ export default {
           this.message.slice(cursorPosition),
         ].join("");
       }
-      this.$refs["inputTextArea"].focus()
+      this.$refs["inputTextArea"].focus();
     },
   },
 };
 </script>
-
 <style scoped>
 .form {
   display: flex;
