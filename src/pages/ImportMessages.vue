@@ -1,5 +1,23 @@
 <template>
   <b-overlay :show="isLoading" rounded="sm">
+    <div>
+      <b-navbar type="dark" variant="dark">
+        <b-navbar-nav>
+          <img src="../assets/logo.png" alt class="logo" width="34" height="34" />
+          <b-nav-item link to='/home'>Whamess</b-nav-item>
+          <!-- Navbar dropdowns -->
+        </b-navbar-nav>
+        <b-collapse id="navbar-toggle-collapse" is-nav>
+          <b-navbar-nav class="ml-auto">
+            <b-nav-item-dropdown :text="this.profile.name" right>
+              <b-dropdown-item @click="getaccount">Account</b-dropdown-item>
+              <b-dropdown-item href="#">Settings</b-dropdown-item>
+              <b-dropdown-item @click="signout">Logout</b-dropdown-item>
+            </b-nav-item-dropdown>
+          </b-navbar-nav>
+        </b-collapse>
+      </b-navbar>
+    </div>
     <b-container class="pt-5">
       <b-form class="form" @submit.stop.prevent="submmit">
         <!-- Styled -->
@@ -38,7 +56,7 @@
             >{{ column }}</b-button>
           </div>
           <div>
-            <b-button id="btn-send" type="submit" variant="primary">
+            <b-button v-if="status" id="btn-send" type="submit" variant="primary">
               <!-- <b-spinner v-if="isLoading" label="Spinning"></b-spinner> -->
               <span>Enviar</span>
             </b-button>
@@ -142,7 +160,12 @@ export default {
       qrcodestring: "",
       islogged: false,
       status: false,
+      profile: {},
     };
+  },
+  created() {
+    this.getsession();
+    this.getprofile();
   },
   computed: {
     paginationRows() {
@@ -150,6 +173,35 @@ export default {
     },
   },
   methods: {
+    async signout() {
+      localStorage.removeItem("token");
+      router.push("/");
+    },
+    async getaccount() {
+      const token = localStorage.getItem("token");
+      var jwt = require("jsonwebtoken");
+      var { email } = jwt.verify(token, "secretKey");
+
+      let res = await axios.get(`users/getbyemail/${email}`, {
+        headers: { Authorization: "Bearer " + token },
+      });
+
+      this.profile = res.data;
+
+      router.push("/account")
+
+    },     
+    async getprofile() {
+      const token = localStorage.getItem("token");
+      var jwt = require("jsonwebtoken");
+      var { email } = jwt.verify(token, "secretKey");
+
+      let res = await axios.get(`users/getbyemail/${email}`, {
+        headers: { Authorization: "Bearer " + token },
+      });
+
+      this.profile = res.data;
+    },
     async getsession() {
       const token = localStorage.getItem("token");
       this.islogged = true;
@@ -160,7 +212,7 @@ export default {
 
       if (res.data.islogged === true) {
         this.status = true;
-        this.$bvModal.hide('modal-qrcode');
+        this.$bvModal.hide("modal-qrcode");
         this.islogged = false;
       } else {
         this.status = false;
@@ -179,6 +231,7 @@ export default {
         this.qrcodestring = "data:image/png;base64, " + res.data.string;
       } catch {
         router.push("/");
+        localStorage.removeItem("token");
         alert("Sessão expirada!");
       }
       //console.log(port);
@@ -236,11 +289,20 @@ export default {
           this.clearAll();
           this.showAlert("Mensagens enviadas com sucesso!", "success");
           this.isLoading = false;
-          console.log(result);
+          axios.post(
+            `users/messagescount/${this.profile.id}/${result.data}`,
+            {},
+            {
+              headers: { Authorization: "Bearer " + token },
+            }
+          );
         })
         .catch((err) => {
           this.isLoading = false;
           console.log(err);
+          router.push("/");
+          localStorage.removeItem("token");
+          alert("Sessão expirada!");
         });
     },
     formatNumbers(sheetNames, result) {

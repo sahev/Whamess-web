@@ -1,7 +1,7 @@
 <template>
-  <b-container class="login-page">
+  <b-container class="login-page">    
     <b-card bg-variant="light" text-variant="black" size="lg" class="login-card">
-      <h1>Whamess</h1>
+      <img src="../assets/whamess.png" alt="" class="logo">
       <b-form @submit="onSubmit" @reset="onReset" class="m-4">
         <b-form-group class="align-self-start" id="input-group-1">
           <b-form-input
@@ -48,7 +48,38 @@
   </b-container>
 </template>
 
-<script src="../scripts/login.js"></script>
+<script>
+import router from "../router";
+import axios from "axios";
+export default {
+  name: "Login",
+  data() {
+    return {
+      login: {
+        email: "",
+        password: "",
+      },
+      checkBoxLembrarMe: true,
+    };
+  },
+  methods: {
+    async onSubmit() {
+      try {
+        let response = await axios.post("auth/login", this.login);
+        localStorage.setItem("token", response.data.access_token);
+        router.push("home");
+      } catch {
+        localStorage.removeItem("token");
+        alert('Usuário ou senha inválidos!');
+      }
+    },
+
+    onReset() {
+      console.log("reset");
+    },
+  },
+};
+</script>
 
 <style>
 .login-page {

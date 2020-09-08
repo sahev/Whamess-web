@@ -3,11 +3,11 @@ import Router from 'vue-router'
 import ImportMessages from '@/pages/ImportMessages.vue';
 import Login from '@/pages/login.vue'
 import qrCode from '@/pages/qrCode.vue'
+import account from '@/pages/account.vue'
 
 Vue.use(Router)
 
-
-export default new Router({
+const router = new Router({
   routes: [
     {
       path: '/',
@@ -29,6 +29,30 @@ export default new Router({
       meta: {
         requiresAuth: true
       }
+    },
+    {
+      path: '/account',
+      name: 'account',
+      component: account,
+      meta: {
+        requiresAuth: true
+      }
     }
   ]
 })
+
+router.beforeEach((to, from, next) => {
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (localStorage.getItem('token') === null) {
+      next({
+        path: '/'
+      })
+    } else {
+      next();
+    }
+  } else {
+    next();
+  }
+})
+
+export default router;
