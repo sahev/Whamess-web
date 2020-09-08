@@ -38,7 +38,7 @@
             >{{ column }}</b-button>
           </div>
           <div>
-            <b-button type="submit" variant="primary">
+            <b-button id="btn-send" type="submit" variant="primary">
               <!-- <b-spinner v-if="isLoading" label="Spinning"></b-spinner> -->
               <span>Enviar</span>
             </b-button>
@@ -63,13 +63,36 @@
         </div>
         <!-- SCAN QRCODE -->
         <div>
-          <b-button v-b-modal.modal-1 @click="getqrcode">Código QR aqui!</b-button>
-          <b-modal id="modal-1" title="Aponte o celular aqui para capturar o código">
-            <b-overlay :show="isLoading" class="text-center position-relative" rounded="square">
+          <button
+            v-if="status === false "
+            @click="$bvModal.show('modal-qrcode'); getqrcode(); getsession()"
+            class="btn btn-danger"
+          >
+            Offline
+            <b-spinner v-if="islogged" id="spinner" small></b-spinner>
+          </button>
+          <button
+            v-if="status === true"
+            @click="$bvModal.show('modal-qrcode'); getqrcode(); getsession()"
+            class="btn btn-success"
+          >
+            Online
+            <b-spinner v-if="islogged" id="spinner" small></b-spinner>
+          </button>
+
+          <b-modal id="modal-qrcode" hide-footer>
+            <template v-slot:modal-title>Aponte o celular aqui para capturar o código</template>
+            <div class="d-block text-center">
+              <b-overlay :show="isLoading" class="text-center position-relative" rounded="square">
                 <b-img thumbnail rounded="square" fluid :src="qrcodestring" alt="QRCode"></b-img>
               </b-overlay>
+            </div>
+            <b-button
+              class="mt-3"
+              block
+              @click="$bvModal.hide('modal-qrcode'); getsession();"
+            >Continuar</b-button>
           </b-modal>
-
         </div>
         <!-- END SCAN QRCODE  -->
         <div class="footer pt-3">
@@ -116,7 +139,9 @@ export default {
       loadingMessage: "",
       paginationCurrentPage: 1,
       paginationPerPage: 10,
-      qrcodestring: '',
+      qrcodestring: "",
+      islogged: false,
+      status: false,
     };
   },
   computed: {
@@ -125,6 +150,24 @@ export default {
     },
   },
   methods: {
+    async getsession() {
+      const token = localStorage.getItem("token");
+      this.islogged = true;
+
+      let res = await axios.get("session/", {
+        headers: { Authorization: "Bearer " + token },
+      });
+
+      if (res.data.islogged === true) {
+        this.status = true;
+        this.$bvModal.hide('modal-qrcode');
+        this.islogged = false;
+      } else {
+        this.status = false;
+        this.islogged = false;
+      }
+      //console.log(res.data, this.status);
+    },
     async getqrcode() {
       const token = localStorage.getItem("token");
       this.isLoading = true;
@@ -179,13 +222,16 @@ export default {
       this.isLoading = true;
       this.loadingMessage = "Enviando mensagens";
       axios
-        .post("messages/send", {
-          columnSheet: this.sheetItems,
-          message: this.message,
-        }, 
-        {
-          headers: { Authorization: "Bearer " + token }
-          })
+        .post(
+          "messages/send",
+          {
+            columnSheet: this.sheetItems,
+            message: this.message,
+          },
+          {
+            headers: { Authorization: "Bearer " + token },
+          }
+        )
         .then((result) => {
           this.clearAll();
           this.showAlert("Mensagens enviadas com sucesso!", "success");
