@@ -1,81 +1,74 @@
 <template>
   <div>
-    <b-button v-b-toggle.sidebar-backdrop variant="primary">Inicie aqui com QRCode</b-button>
-    <b-sidebar id="sidebar-backdrop" :title="title" backdrop-variant="dark" backdrop shadow>
-      <select class="px-3 py-2" v-model="port" @change="getqrcode(port)">
-        <option value disabled>Selecione um perfil</option>
-        <option
-          v-for="profile in profiles"
-          :key="profile.port"
-          :value="profile.port"
-        >{{profile.name}}</option>
-      </select>
-      <div class="px-3 py-2">
-        <div v-if="isLoading === true" class="d-flex justify-content-center flex-column">
-          <atom-spinner
-            class="align-self-center"
-            :animation-duration="1000"
-            :size="100"
-            :color="'#000000'"
-          />
-          <b>{{ loadingMessage }}...</b>
-        </div>
-        <img v-if="isLoading === false" :src="qrcodestring" />
-      </div>
-    </b-sidebar>
     <div>
-      <b-button
-        v-b-toggle.sidebar-backdrop
-        variant="primary"
-        @click="getqrcode"
-      >Inicie aqui com QRCode</b-button>
-      <b-row class="text-center mt-3">
-        <b-col md="6">
-          <b-overlay :show="isLoading" class="d-inline-block" rounded="square">
+      <b-button v-b-modal.modal-1 @click="getqrcode">Código QR aqui!</b-button>
+      <b-modal id="modal-1" title="Aponte o celular aqui para capturar o código">
+        <b-overlay :show="isLoading" class="text-center position-relative" rounded="square">
+          <b-img thumbnail rounded="square" fluid :src="qrcodestring" alt="QRCode"></b-img>
+        </b-overlay>
+      </b-modal>
+    </div>
+    <div>
+      <button v-if="status === false " @click="$bvModal.show('modal-qrcode'); getqrcode(); getsession()" class='btn btn-danger'>Offline
+        <b-spinner v-if="islogged" id="spinner" small></b-spinner>
+      </button>
+      <button v-if="status === true" @click="$bvModal.show('modal-qrcode'); getqrcode(); getsession()" class='btn btn-success'>Online
+        <b-spinner v-if="islogged" id="spinner" small></b-spinner>
+      </button>
+      
+      <b-modal id="modal-qrcode" hide-footer>
+        <template v-slot:modal-title>Aponte o celular aqui para capturar o código</template>
+        <div class="d-block text-center">
+          <b-overlay :show="isLoading" class="text-center position-relative" rounded="square">
             <b-img thumbnail rounded="square" fluid :src="qrcodestring" alt="QRCode"></b-img>
           </b-overlay>
-        </b-col>
-      </b-row>
+        </div>
+        <b-button class="mt-3" block @click="$bvModal.hide('modal-qrcode'); getsession();">Continuar</b-button>
+      </b-modal>
     </div>
   </div>
 </template>
 <script>
 import axios from "axios";
-import router from "../router";
-import { AtomSpinner } from "epic-spinners";
+
 export default {
-  components: {
-    AtomSpinner,
-  },
   data() {
     return {
-      port: "",
-      title: "Perfil: ",
-      profiles: [
-        { port: "9222", name: "principal" },
-        { port: "9223", name: "secundário" },
-        { port: "9224", name: "terciário" },
-      ],
       qrcodestring: "",
       isLoading: false,
       show: false,
+      islogged: false,
+      status: false,
     };
   },
   methods: {
     async getqrcode() {
       const token = localStorage.getItem("token");
       this.isLoading = true;
-      try {
-        let res = await axios.get("getqrcode/", {
-          headers: { Authorization: "Bearer " + token },
-        });
-        this.isLoading = false;
-        this.qrcodestring = "data:image/png;base64, " + res.data.string;
-      } catch {
-        router.push("/");
-        alert("Sessão expirada!");
+
+      let res = await axios.get("getqrcode/", {
+        headers: { Authorization: "Bearer " + token },
+      });
+      this.isLoading = false;
+      this.qrcodestring = "data:image/png;base64, " + res.data.string;
+    },
+
+    async getsession() {
+      const token = localStorage.getItem("token");
+      this.islogged = true;
+
+      let res = await axios.get("session/", {
+        headers: { Authorization: "Bearer " + token },
+      });
+      
+      if (res.data.islogged === true) {
+        this.status = true
+        this.islogged = false;
+      } else {
+        this.status = false
+        this.islogged = false
       }
-      //console.log(port);
+      //console.log(res.data, this.status);
     },
   },
 };
