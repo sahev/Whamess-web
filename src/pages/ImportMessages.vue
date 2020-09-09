@@ -4,7 +4,7 @@
       <b-navbar type="dark" variant="dark">
         <b-navbar-nav>
           <img src="../assets/logo.png" alt class="logo" width="34" height="34" />
-          <b-nav-item link to='/home'>Whamess</b-nav-item>
+          <b-nav-item link to="/home">Whamess</b-nav-item>
           <!-- Navbar dropdowns -->
         </b-navbar-nav>
         <b-collapse id="navbar-toggle-collapse" is-nav>
@@ -82,22 +82,14 @@
         <!-- SCAN QRCODE -->
         <div>
           <button
-            v-if="status === false "
-            @click="$bvModal.show('modal-qrcode'); getqrcode(); getsession()"
+            v-if="!status"
+            @click="$bvModal.show('modal-qrcode'); getqrcode();"
             class="btn btn-danger"
           >
             Offline
             <b-spinner v-if="islogged" id="spinner" small></b-spinner>
           </button>
-          <button
-            v-if="status === true"
-            @click="$bvModal.show('modal-qrcode'); getqrcode(); getsession()"
-            class="btn btn-success"
-            disabled
-          >
-            Online
-            <b-spinner v-if="islogged" id="spinner" small></b-spinner>
-          </button>
+          <button v-if="status" class="btn btn-success" disabled>Online</button>
 
           <b-modal id="modal-qrcode" hide-footer>
             <template v-slot:modal-title>Aponte o celular aqui para capturar o código</template>
@@ -106,11 +98,6 @@
                 <b-img thumbnail rounded="square" fluid :src="qrcodestring" alt="QRCode"></b-img>
               </b-overlay>
             </div>
-            <b-button
-              class="mt-3"
-              block
-              @click="$bvModal.hide('modal-qrcode'); getsession();"
-            >Continuar</b-button>
           </b-modal>
         </div>
         <!-- END SCAN QRCODE  -->
@@ -162,11 +149,33 @@ export default {
       islogged: false,
       status: false,
       profile: {},
+      displaymodal: false,
     };
   },
   created() {
-    this.getsession();
     this.getprofile();
+    this.getsession();
+    let thiss = this;
+
+    window.setInterval(async function () {
+      if (
+        !thiss.status &&
+        thiss.displaymodal &&
+        localStorage.getItem("token") !== null
+      ) {
+        thiss.getsession();
+      }
+      if (thiss.status === true && thiss.displaymodal) {
+        thiss.displaymodal = false;
+        clearInterval();
+      }
+    }, 3000);
+
+    window.setInterval(async function () {
+      if (thiss.status && localStorage.getItem("token") !== null) {
+        thiss.getsession();
+      }
+    }, 10000);
   },
   computed: {
     paginationRows() {
@@ -176,6 +185,7 @@ export default {
   methods: {
     async signout() {
       localStorage.removeItem("token");
+
       router.push("/");
     },
     async getaccount() {
@@ -189,9 +199,8 @@ export default {
 
       this.profile = res.data;
 
-      router.push("/account")
-
-    },     
+      router.push("/account");
+    },
     async getprofile() {
       const token = localStorage.getItem("token");
       var jwt = require("jsonwebtoken");
@@ -203,13 +212,14 @@ export default {
 
       this.profile = res.data;
     },
+
     async getsession() {
       const token = localStorage.getItem("token");
       this.islogged = true;
 
-      let res = await axios.get("session/", {
+        let res = await axios.get("session/", {
         headers: { Authorization: "Bearer " + token },
-      });
+        })
 
       if (res.data.islogged === true) {
         this.status = true;
@@ -219,11 +229,12 @@ export default {
         this.status = false;
         this.islogged = false;
       }
-      console.log(res.data, this.status);
     },
     async getqrcode() {
       const token = localStorage.getItem("token");
       this.isLoading = true;
+      this.displaymodal = true;
+
       try {
         let res = await axios.get("getqrcode/", {
           headers: { Authorization: "Bearer " + token },
