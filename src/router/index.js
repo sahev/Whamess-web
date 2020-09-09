@@ -4,6 +4,7 @@ import ImportMessages from '@/pages/ImportMessages.vue';
 import Login from '@/pages/login.vue'
 import qrCode from '@/pages/qrCode.vue'
 import account from '@/pages/account.vue'
+import signup from '@/pages/signup.vue'
 
 Vue.use(Router)
 
@@ -37,6 +38,11 @@ const router = new Router({
       meta: {
         requiresAuth: true
       }
+    },
+    {
+      path: '/signup',
+      name: 'signup',
+      component: signup,
     }
   ]
 })

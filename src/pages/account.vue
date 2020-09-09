@@ -1,4 +1,5 @@
 <template>
+<b-overlay :show="isLoading" rounded="sm">
   <b-container>
     <div>
       <b-navbar type="dark" variant="dark">
@@ -9,7 +10,7 @@
         </b-navbar-nav>
         <b-collapse id="navbar-toggle-collapse" is-nav>
           <b-navbar-nav class="ml-auto">
-            <b-nav-item-dropdown :text="this.profile.name" right>
+            <b-nav-item-dropdown :text="this.profile.name + ' ' + this.profile.lastname" right>
               <b-dropdown-item>Account</b-dropdown-item>
               <b-dropdown-item href="#">Settings</b-dropdown-item>
               <b-dropdown-item @click="signout">Logout</b-dropdown-item>
@@ -18,7 +19,7 @@
         </b-collapse>
       </b-navbar>
       <div class="mr-auto">
-        <ul>Nome: {{profile.name}}</ul>
+        <ul>Nome: {{profile.name}} {{profile.lastname}} </ul>
         <ul>E-mail: {{profile.email}}</ul>
         <ul>Mensagens disponíveis: {{2000 - profile.messagesCount}}</ul>
       </div>
@@ -30,6 +31,7 @@
       </p>
     </div>
   </b-container>
+  </b-overlay>
 </template>
 <script>
 import axios from "axios";
@@ -54,19 +56,6 @@ export default {
       localStorage.removeItem("token");
       router.push("/");
     },
-    async getaccount() {
-      const token = localStorage.getItem("token");
-      var jwt = require("jsonwebtoken");
-      var { email } = jwt.verify(token, "secretKey");
-
-      let res = await axios.get(`users/getbyemail/${email}`, {
-        headers: { Authorization: "Bearer " + token },
-      });
-
-      this.profile = res.data;
-
-      router.push("/account");
-    },
     async getprofile() {
       const token = localStorage.getItem("token");
       var jwt = require("jsonwebtoken");
@@ -77,24 +66,6 @@ export default {
       });
 
       this.profile = res.data;
-    },
-    async getsession() {
-      const token = localStorage.getItem("token");
-      this.islogged = true;
-
-      let res = await axios.get("session/", {
-        headers: { Authorization: "Bearer " + token },
-      });
-
-      if (res.data.islogged === true) {
-        this.status = true;
-        this.$bvModal.hide("modal-qrcode");
-        this.islogged = false;
-      } else {
-        this.status = false;
-        this.islogged = false;
-      }
-      //console.log(res.data, this.status);
     },
   },
 };
