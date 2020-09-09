@@ -1,7 +1,7 @@
 <template>
-  <b-container class="login-page">    
+  <b-container class="login-page">
     <b-card bg-variant="light" text-variant="black" size="lg" class="login-card">
-      <img src="../assets/whamess.png" alt="" class="logo">
+      <img src="../assets/whamess.png" alt class="logo" />
       <b-form @submit="onSubmit" @reset="onReset" class="m-4">
         <b-form-group class="align-self-start" id="input-group-1">
           <b-form-input
@@ -40,7 +40,7 @@
             <b-button type="submit" variant="primary" style="width: 15rem">Acessar</b-button>
           </div>
           <div class="pt-3">
-            <a href="/">Cadastrar</a>
+            <b-button variant="outline-primary" link to="/signup" style="width: 15rem">Cadastrar</b-button>
           </div>
         </div>
       </b-form>
@@ -63,6 +63,15 @@ export default {
     };
   },
   methods: {
+    showAlert(message, status) {
+      this.$bvToast.toast(message, {
+        title: message === "success" ? "Sucesso" : "Atenção",
+        variant: status,
+        toaster: "b-toaster-bottom-right",
+        autoHideDelay: 5000,
+        appendToast: true,
+      });
+    },   
     async onSubmit() {
       try {
         let response = await axios.post("auth/login", this.login);
@@ -70,7 +79,7 @@ export default {
         router.push("home");
       } catch {
         localStorage.removeItem("token");
-        alert('Usuário ou senha inválidos!');
+        this.showAlert("Usuário ou senha inválidos!", "warning");
       }
     },
 

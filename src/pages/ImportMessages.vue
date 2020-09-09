@@ -9,7 +9,7 @@
         </b-navbar-nav>
         <b-collapse id="navbar-toggle-collapse" is-nav>
           <b-navbar-nav class="ml-auto">
-            <b-nav-item-dropdown :text="this.profile.name" right>
+            <b-nav-item-dropdown :text="this.profile.name + ' ' + this.profile.lastname" right>
               <b-dropdown-item @click="getaccount">Account</b-dropdown-item>
               <b-dropdown-item href="#">Settings</b-dropdown-item>
               <b-dropdown-item @click="signout">Logout</b-dropdown-item>
@@ -93,6 +93,7 @@
             v-if="status === true"
             @click="$bvModal.show('modal-qrcode'); getqrcode(); getsession()"
             class="btn btn-success"
+            disabled
           >
             Online
             <b-spinner v-if="islogged" id="spinner" small></b-spinner>
@@ -218,7 +219,7 @@ export default {
         this.status = false;
         this.islogged = false;
       }
-      //console.log(res.data, this.status);
+      console.log(res.data, this.status);
     },
     async getqrcode() {
       const token = localStorage.getItem("token");
