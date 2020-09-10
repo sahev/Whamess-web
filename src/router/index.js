@@ -35,9 +35,9 @@ const router = new Router({
       path: '/account',
       name: 'account',
       component: account,
-      meta: {
-        requiresAuth: true
-      }
+      // meta: {
+      //   requiresAuth: true
+      // }
     },
     {
       path: '/signup',

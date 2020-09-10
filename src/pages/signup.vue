@@ -35,6 +35,16 @@
 
         <b-form-group id="input-group-4">
           <b-form-input
+            id="input-phone"
+            v-model="login.phone"
+            type="phone"
+            placeholder="Telefone"
+            required
+          ></b-form-input>
+        </b-form-group>
+
+        <b-form-group id="input-group-5">
+          <b-form-input
             id="input-password"
             v-model="login.password"
             type="password"
@@ -43,7 +53,7 @@
           ></b-form-input>
         </b-form-group>
 
-        <b-form-group id="input-group-5">
+        <b-form-group id="input-group-6">
           <b-form-input
             id="input-repassword"
             v-model="login.repassword"
@@ -77,6 +87,7 @@ export default {
         name: "",
         lastname: "",
         email: "",
+        phone: "",
         password: "",
         repassword: "",
       },
