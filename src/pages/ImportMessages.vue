@@ -11,7 +11,6 @@
           <b-navbar-nav class="ml-auto">
             <b-nav-item-dropdown :text="this.profile.name + ' ' + this.profile.lastname" right>
               <b-dropdown-item @click="getaccount">Account</b-dropdown-item>
-              <b-dropdown-item href="#">Settings</b-dropdown-item>
               <b-dropdown-item @click="signout">Logout</b-dropdown-item>
             </b-nav-item-dropdown>
           </b-navbar-nav>
@@ -214,20 +213,27 @@ export default {
     },
 
     async getsession() {
-      const token = localStorage.getItem("token");
-      this.islogged = true;
+      try {
 
-        let res = await axios.get("session/", {
-        headers: { Authorization: "Bearer " + token },
-        })
-
-      if (res.data.islogged === true) {
-        this.status = true;
-        this.$bvModal.hide("modal-qrcode");
-        this.islogged = false;
-      } else {
-        this.status = false;
-        this.islogged = false;
+        const token = localStorage.getItem("token");
+        this.islogged = true;
+  
+          let res = await axios.get("session/", {
+          headers: { Authorization: "Bearer " + token },
+          })
+  
+        if (res.data.islogged === true) {
+          this.status = true;
+          this.$bvModal.hide("modal-qrcode");
+          this.islogged = false;
+        } else {
+          this.status = false;
+          this.islogged = false;
+        }
+      } catch {
+        router.push("/");
+        localStorage.removeItem("token");
+        alert("Sessão expirada!");       
       }
     },
     async getqrcode() {

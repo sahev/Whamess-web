@@ -23,16 +23,6 @@
           ></b-form-input>
         </b-form-group>
 
-        <b-form-group id="input-group-3">
-          <b-form-input
-            id="input-email"
-            v-model="login.email"
-            type="email"
-            placeholder="E-mail"
-            required
-          ></b-form-input>
-        </b-form-group>
-
         <b-form-group id="input-group-4">
           <b-form-input
             id="input-phone"
@@ -42,6 +32,16 @@
             required
           ></b-form-input>
         </b-form-group>
+
+        <b-form-group id="input-group-3">
+          <b-form-input
+            id="input-email"
+            v-model="login.email"
+            type="email"
+            placeholder="E-mail"
+            required
+          ></b-form-input>
+        </b-form-group>        
 
         <b-form-group id="input-group-5">
           <b-form-input
@@ -104,7 +104,6 @@ export default {
     },      
     async onSubmit() {
       if (this.login.password !== this.login.repassword) {
-        console.log(this.login.password, this.login.repassword);
         this.showAlert("Digite a senha corretamente", "warning");
       } else {
         
