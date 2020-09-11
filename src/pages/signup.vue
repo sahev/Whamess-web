@@ -1,7 +1,7 @@
 <template>
   <b-container class="login-page">
     <b-card bg-variant="light" text-variant="black" size="lg" class="login-card">
-      <img src="../assets/whamess.png" alt class="logo" />
+      <img src="../assets/logo.png" alt class="logo" width="100" height="100"/>
       <b-form @submit="onSubmit" @reset="onReset" class="m-4">
         <b-form-group class="align-self-start" id="input-group-1">
           <b-form-input
@@ -27,7 +27,7 @@
           <b-form-input
             id="input-phone"
             v-model="login.phone"
-            type="phone"
+            type="tel"
             placeholder="Telefone"
             required
           ></b-form-input>

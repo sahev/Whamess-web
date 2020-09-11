@@ -89,7 +89,6 @@
             <b-spinner v-if="islogged" id="spinner" small></b-spinner>
           </button>
           <button v-if="status" class="btn btn-success" disabled>Online</button>
-
           <b-modal id="modal-qrcode" hide-footer>
             <template v-slot:modal-title>Aponte o celular aqui para capturar o código</template>
             <div class="d-block text-center">
@@ -214,14 +213,13 @@ export default {
 
     async getsession() {
       try {
-
         const token = localStorage.getItem("token");
         this.islogged = true;
-  
-          let res = await axios.get("session/", {
+
+        let res = await axios.get("session/", {
           headers: { Authorization: "Bearer " + token },
-          })
-  
+        });
+
         if (res.data.islogged === true) {
           this.status = true;
           this.$bvModal.hide("modal-qrcode");
@@ -233,7 +231,7 @@ export default {
       } catch {
         router.push("/");
         localStorage.removeItem("token");
-        alert("Sessão expirada!");       
+        alert("Sessão expirada!");
       }
     },
     async getqrcode() {
@@ -310,6 +308,15 @@ export default {
           axios.post(
             `users/messagescount/${this.profile.id}/${result.data}`,
             {},
+            {
+              headers: { Authorization: "Bearer " + token },
+            }
+          );
+          axios.post(
+            'users/messagesinfo',
+              { usr_id: this.profile.id,
+                mes_messagesperday: result.data
+              },
             {
               headers: { Authorization: "Bearer " + token },
             }

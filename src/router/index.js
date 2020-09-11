@@ -5,6 +5,7 @@ import Login from '@/pages/login.vue'
 import qrCode from '@/pages/qrCode.vue'
 import account from '@/pages/account.vue'
 import signup from '@/pages/signup.vue'
+import dashboard from '@/pages/dashboard.vue'
 
 Vue.use(Router)
 
@@ -43,7 +44,15 @@ const router = new Router({
       path: '/signup',
       name: 'signup',
       component: signup,
-    }
+    },
+    {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: dashboard,
+      // meta: {
+      //   requiresAuth: true
+      // }
+    },
   ]
 })
 
