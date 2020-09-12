@@ -23,15 +23,43 @@
           <b-tabs card>
             <b-tab title="Dashboard" active>
               <b-card bg-variant="light">
-                <b-card-text>Mensagens enviadas por modelo</b-card-text>
-               
-                  <chartjs-line
-                    v-bind:labels="labels"
-                    :datasets="linedatasets"
-                    :option="lineoption"
-                    :height="50"
-                  ></chartjs-line>
-                
+                <div>
+                  <div>
+                    <b-card-group deck>
+                      <b-card
+                        bg-variant="secondary"
+                        text-variant="white"
+                        header="Diário"
+                        class="text-center"
+                      >
+                        <b-card-text>{{ this.countday }}</b-card-text>
+                      </b-card>
+
+                      <b-card
+                        bg-variant="secondary"
+                        text-variant="white"
+                        header="Semanal"
+                        class="text-center"
+                      >
+                        <b-card-text>{{ this.countweekly }}</b-card-text>
+                      </b-card>
+
+                      <b-card
+                        bg-variant="secondary"
+                        text-variant="white"
+                        header="Mensal"
+                        class="text-center"
+                      >
+                        <b-card-text>{{ this.countmonthly }}</b-card-text>
+                      </b-card>
+                    </b-card-group>
+                  </div>
+                </div>
+
+                <b-card-text></b-card-text>
+
+                <dashboard meupiru="Diário" />
+                <dashboard meupiru="Semanal" />
               </b-card>
             </b-tab>
             <b-tab title="Perfil">
@@ -133,7 +161,6 @@
 
                     <div class="float-right">
                       <b-button-toolbar key-nav>
-                        ´
                         <div id="submit" class="mx-1">
                           <b-button
                             v-if="!updatebutton"
@@ -181,100 +208,121 @@
 <script>
 import axios from "axios";
 import router from "../router";
+import moment from "moment";
+import dashboard from "./dashboard";
 
 export default {
   name: "Account",
   props: {},
+  components: {
+    dashboard,
+  },
   data() {
     return {
       isLoading: false,
       islogged: false,
       profile: {},
       updatebutton: false,
-      labels: [
-        "Hoje",
-        "-",
-        "-",
-        "-",
-        "-",
-        "-",
-        "6 dias atrás",
-      ],
-      piedatasets: [
-        {
-          data: [20, 30, 18, 20, 30, 18, 50],
-          backgroundColor: ["red", "blue", "yellow"],
-        },
-      ],
-      pieoption: {
-        title: {
-          display: true,
-          position: "bottom",
-          text: "Mensagens enviadas",
-        },
-      },
-      linedatasets: [
-        {
-          label: "perfil 1",
-          data: [],
-          borderColor: ["rgba(255, 99, 132, 1)"],
-          borderWidth: 1,
-        },
-      ],
-      lineoption: {
-        title: {
-          display: true,
-          position: "bottom",
-          text: "Mensagens enviadas",
-        },
+      countday: 0,
+      countweekly: 0,
+      countmonthly: 0,
+      arrMes_id: [],
+      arrUsr_id: [],
+      arrMes_messagesperday: [],
+      arrMes_messagesperweekly: [],
+      arrMes_messagespermonth: [],
+      chartOptions: {
+        responsive: true,
+        maintainAspectRatio: false,
       },
     };
   },
   async created() {
-    try {
-      const token = localStorage.getItem("token");
-      var jwt = require("jsonwebtoken");
-      var { id } = jwt.verify(token, "secretKey");
+    var initial = 0;
+    const token = localStorage.getItem("token");
+    var jwt = require("jsonwebtoken");
+    var { id } = jwt.verify(token, "secretKey");
 
-      let res = await axios.get("users/messagesperday", {
+    let { data } = await axios.get("users/messagesperweek", {
+      headers: { Authorization: "Bearer " + token },
+      params: { id },
+    });
+
+    data.forEach((d) => {
+      const date = moment(d.mes_date).locale("pt").format("dddd");
+      const { mes_id, usr_id, mes_messagesperday } = d;
+
+      this.arrMes_id.push({ date, total: mes_id });
+      this.arrUsr_id.push({ date, total: usr_id });
+      this.arrMes_messagesperweekly.push({
+        usr_id,
+        date,
+        total: mes_messagesperday,
+      });
+    });
+
+    this.countweekly = this.arrMes_messagesperweekly.reduce(function (
+      sum,
+      current
+    ) {
+      return sum + current.total;
+    },
+    initial);
+
+    axios
+      .get("users/messagesperday", {
         headers: { Authorization: "Bearer " + token },
         params: { id },
+      })
+      .then((res) => {
+        res.data.forEach((d) => {
+          const { mes_messagesperday } = d;
+
+          this.arrMes_messagesperday.push({
+            total: mes_messagesperday,
+          });
+        });
+        this.countday = this.arrMes_messagesperday.reduce(function (
+          sum,
+          current
+        ) {
+          return sum + current.total;
+        },
+        initial);
+        });
+
+       
+
+    axios
+      .get("users/messagespermonth", {
+        headers: { Authorization: "Bearer " + token },
+        params: { id },
+      })
+      .then((res) => {
+        res.data.forEach((d) => {
+          const { mes_messagesperday } = d;
+
+          this.arrMes_messagespermonth.push({
+            total: mes_messagesperday,
+          });
+        });
+        this.countmonthly = this.arrMes_messagespermonth.reduce(function (
+          sum,
+          current
+        ) {
+          return sum + current.total;
+        },
+        initial);
       });
-      let qnt = res.data.map((ret) => {
-        return ret.mes_messagesperday;
-      });
-      this.linedatasets[0].data = qnt;
-    } catch {
-      // alert("sessao expirada");
-      // localStorage.removeItem("token");
-      // router.push("/");
-    }
 
     this.getprofile();
   },
   computed: {},
   methods: {
-    updateChart() {
-      //window.myLineChart.update();
+    changeData() {
+      this.$refs.firstDonut.renderChart(this.chartData);
     },
-    async getmessagesperday() {
-      try {
-        const token = localStorage.getItem("token");
-        var jwt = require("jsonwebtoken");
-        var { id } = jwt.verify(token, "secretKey");
 
-        let res = await axios.get("users/messagesperday", {
-          headers: { Authorization: "Bearer " + token },
-          params: { id },
-        });
-
-        console.log(res.data);
-      } catch {
-        // alert("sessao expirada");
-        // localStorage.removeItem("token");
-        // router.push("/");
-      }
-    },
     showAlert(message, status) {
       this.$bvToast.toast(message, {
         title: status === "success" ? "Sucesso" : "Atenção!",
