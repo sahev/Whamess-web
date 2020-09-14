@@ -1,22 +1,5 @@
 <template>
   <b-overlay :show="isLoading" rounded="sm">
-    <div>
-      <b-navbar type="dark" variant="dark">
-        <b-navbar-nav>
-          <img src="../assets/logo.png" alt class="logo" width="34" height="34" />
-          <b-nav-item link to="/home">Whamess</b-nav-item>
-          <!-- Navbar dropdowns -->
-        </b-navbar-nav>
-        <b-collapse id="navbar-toggle-collapse" is-nav>
-          <b-navbar-nav class="ml-auto">
-            <b-nav-item-dropdown :text="this.profile.name + ' ' + this.profile.lastname" right>
-              <b-dropdown-item @click="getaccount">Account</b-dropdown-item>
-              <b-dropdown-item @click="signout">Logout</b-dropdown-item>
-            </b-nav-item-dropdown>
-          </b-navbar-nav>
-        </b-collapse>
-      </b-navbar>
-    </div>
     <b-container class="pt-5">
       <b-form class="form" @submit.stop.prevent="submmit">
         <!-- Styled -->
@@ -55,7 +38,8 @@
             >{{ column }}</b-button>
           </div>
           <div>
-            <b-button v-if="status" id="btn-send" type="submit" variant="primary">
+            <!-- <b-button v-if="status" id="btn-send" type="submit" variant="primary"> -->
+              <b-button id="btn-send" type="submit" variant="primary">
               <!-- <b-spinner v-if="isLoading" label="Spinning"></b-spinner> -->
               <span>Enviar</span>
             </b-button>
@@ -78,33 +62,10 @@
             aria-controls="table"
           />
         </div>
+
         <!-- SCAN QRCODE -->
-        <div>
-          <button
-            v-if="!status"
-            @click="$bvModal.show('modal-qrcode'); getqrcode();"
-            class="btn btn-danger"
-          >
-            Offline
-            <b-spinner v-if="islogged" id="spinner" small></b-spinner>
-          </button>
-          <button v-if="status" class="btn btn-success" disabled>Online</button>
-          <b-modal id="modal-qrcode" hide-footer>
-            <template v-slot:modal-title>Aponte o celular aqui para capturar o código</template>
-            <div class="d-block text-center">
-              <b-overlay :show="isLoading" class="text-center position-relative" rounded="square">
-                <b-img thumbnail rounded="square" fluid :src="qrcodestring" alt="QRCode"></b-img>
-              </b-overlay>
-            </div>
-          </b-modal>
-        </div>
-        <!-- END SCAN QRCODE  -->
-        <div class="footer pt-3">
-          <p>
-            Desenvolvido por
-            <a href>Samuel Evangelista</a>
-          </p>
-        </div>
+        <qrcode />
+        <!-- END SCAN QRCODE -->
       </b-form>
     </b-container>
     <template v-slot:overlay>
@@ -123,14 +84,16 @@
 <script>
 import XLSX from "xlsx";
 import axios from "axios";
-import router from "../router";
+import router from "../../router";
 import { AtomSpinner } from "epic-spinners";
+import qrcode from "./qrcode";
 
 export default {
   name: "ImportMessages",
   props: {},
   components: {
     AtomSpinner,
+    qrcode,
   },
   data() {
     return {
@@ -143,37 +106,14 @@ export default {
       loadingMessage: "",
       paginationCurrentPage: 1,
       paginationPerPage: 10,
-      qrcodestring: "",
+      profile: {},
       islogged: false,
       status: false,
-      profile: {},
-      displaymodal: false,
+
     };
   },
   created() {
     this.getprofile();
-    this.getsession();
-    let thiss = this;
-
-    window.setInterval(async function () {
-      if (
-        !thiss.status &&
-        thiss.displaymodal &&
-        localStorage.getItem("token") !== null
-      ) {
-        thiss.getsession();
-      }
-      if (thiss.status === true && thiss.displaymodal) {
-        thiss.displaymodal = false;
-        clearInterval();
-      }
-    }, 3000);
-
-    window.setInterval(async function () {
-      if (thiss.status && localStorage.getItem("token") !== null) {
-        thiss.getsession();
-      }
-    }, 10000);
   },
   computed: {
     paginationRows() {
@@ -183,22 +123,9 @@ export default {
   methods: {
     async signout() {
       localStorage.removeItem("token");
-
       router.push("/");
     },
-    async getaccount() {
-      const token = localStorage.getItem("token");
-      var jwt = require("jsonwebtoken");
-      var { email } = jwt.verify(token, "secretKey");
 
-      let res = await axios.get(`users/getbyemail/${email}`, {
-        headers: { Authorization: "Bearer " + token },
-      });
-
-      this.profile = res.data;
-
-      router.push("/account");
-    },
     async getprofile() {
       const token = localStorage.getItem("token");
       var jwt = require("jsonwebtoken");
@@ -209,48 +136,6 @@ export default {
       });
 
       this.profile = res.data;
-    },
-
-    async getsession() {
-      try {
-        const token = localStorage.getItem("token");
-        this.islogged = true;
-
-        let res = await axios.get("session/", {
-          headers: { Authorization: "Bearer " + token },
-        });
-
-        if (res.data.islogged === true) {
-          this.status = true;
-          this.$bvModal.hide("modal-qrcode");
-          this.islogged = false;
-        } else {
-          this.status = false;
-          this.islogged = false;
-        }
-      } catch {
-        router.push("/");
-        localStorage.removeItem("token");
-        alert("Sessão expirada!");
-      }
-    },
-    async getqrcode() {
-      const token = localStorage.getItem("token");
-      this.isLoading = true;
-      this.displaymodal = true;
-
-      try {
-        let res = await axios.get("getqrcode/", {
-          headers: { Authorization: "Bearer " + token },
-        });
-        this.isLoading = false;
-        this.qrcodestring = "data:image/png;base64, " + res.data.string;
-      } catch {
-        router.push("/");
-        localStorage.removeItem("token");
-        alert("Sessão expirada!");
-      }
-      //console.log(port);
     },
     sheetToJson() {
       if (this.file === null) {
@@ -313,10 +198,8 @@ export default {
             }
           );
           axios.post(
-            'users/messagesinfo',
-              { usr_id: this.profile.id,
-                mes_messagesperday: result.data
-              },
+            "users/messagesinfo",
+            { usr_id: this.profile.id, mes_messagesperday: result.data },
             {
               headers: { Authorization: "Bearer " + token },
             }
@@ -325,9 +208,9 @@ export default {
         .catch((err) => {
           this.isLoading = false;
           console.log(err);
+          ~this.showAlert("Sessão expirada!", "danger");
           router.push("/");
           localStorage.removeItem("token");
-          alert("Sessão expirada!");
         });
     },
     formatNumbers(sheetNames, result) {
@@ -348,17 +231,8 @@ export default {
     },
     showAlert(message, status) {
       this.$bvToast.toast(message, {
-        title: message === "success" ? "Sucesso" : "Atenção",
+        title: status === "success" ? "Sucesso" : "Atenção",
         variant: status,
-        toaster: "b-toaster-bottom-right",
-        autoHideDelay: 5000,
-        appendToast: true,
-      });
-    },
-    showAlertSuccess(message) {
-      this.$bvToast.toast(message, {
-        title: "Sucesso",
-        variant: "success",
         toaster: "b-toaster-bottom-right",
         autoHideDelay: 5000,
         appendToast: true,
