@@ -47,7 +47,7 @@ export default {
         localStorage.getItem("token") !== null
       ) {
         thiss.getsession();
-      } 
+      }
       if (thiss.status === true && thiss.displaymodal) {
         thiss.displaymodal = false;
         clearInterval();
@@ -57,7 +57,7 @@ export default {
     window.setInterval(async function () {
       if (thiss.status && localStorage.getItem("token") !== null) {
         thiss.getsession();
-      } 
+      }
     }, 10000);
   },
   computed: {},
@@ -65,10 +65,13 @@ export default {
     async getsession() {
       try {
         const token = localStorage.getItem("token");
+        var jwt = require("jsonwebtoken");
+        var { _v, _n } = jwt.verify(token, "secretKey");
         this.islogged = true;
 
         let res = await axios.get("session/", {
           headers: { Authorization: "Bearer " + token },
+          params: { _v, _n },
         });
 
         if (res.data.islogged === true) {
@@ -87,12 +90,15 @@ export default {
     },
     async getqrcode() {
       const token = localStorage.getItem("token");
+      var jwt = require("jsonwebtoken");
+      var { _v, _n } = jwt.verify(token, "secretKey");
       this.isLoading = true;
       this.displaymodal = true;
 
       try {
         let res = await axios.get("getqrcode/", {
           headers: { Authorization: "Bearer " + token },
+          params: { _v, _n },
         });
         this.isLoading = false;
         this.qrcodestring = "data:image/png;base64, " + res.data.string;

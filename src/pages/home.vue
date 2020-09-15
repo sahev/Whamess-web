@@ -18,7 +18,10 @@
       </b-navbar>
     </div>
     <b-container class="pt-5">
-      <importmessages />
+      <template>
+<importmessages />
+      </template>
+      
       <div class="footer pt-3">
         <p>
           Desenvolvido por
@@ -46,21 +49,6 @@ export default {
   },
   created() {
     this.getprofile();
-    let thiss = this;
-
-    window.setInterval(async function () {
-      if (
-        !thiss.status &&
-        thiss.displaymodal &&
-        localStorage.getItem("token") !== null
-      ) {
-        thiss.getsession();
-      } 
-      if (thiss.status === true && thiss.displaymodal) {
-        thiss.displaymodal = false;
-        clearInterval();
-      }
-    }, 3000);    
   },
   computed: {},
   methods: {
