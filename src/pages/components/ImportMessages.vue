@@ -173,6 +173,8 @@ export default {
         return;
       }
       const token = localStorage.getItem("token");
+      var jwt = require("jsonwebtoken");
+      var { _v, _n } = jwt.verify(token, "secretKey");
       this.isLoading = true;
       this.loadingMessage = "Enviando mensagens";
       axios
@@ -184,6 +186,7 @@ export default {
           },
           {
             headers: { Authorization: "Bearer " + token },
+            params: { _v, _n }
           }
         )
         .then((result) => {
