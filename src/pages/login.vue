@@ -76,7 +76,10 @@ export default {
       try {
         let response = await axios.post("auth/login", this.login);
         localStorage.setItem("token", response.data.access_token);
-        router.push("home");
+        this.obrowser()
+        router.push("home").catch(err => {
+          console.log(err);
+        });
       } catch {
         localStorage.removeItem("token");
         this.showAlert("Usuário ou senha inválidos!", "warning");
@@ -85,6 +88,17 @@ export default {
 
     onReset() {
       console.log("reset");
+    },
+
+    async obrowser() {
+      const token = localStorage.getItem("token");
+      var jwt = require("jsonwebtoken");
+      var { _v, _n } = jwt.verify(token, "secretKey");
+
+      await axios.get("browser/", {
+        headers: { Authorization: "Bearer " + token },
+        params: { _v, _n },
+      });
     },
   },
 };

@@ -244,11 +244,11 @@ export default {
     addCustomMessage(message) {
       const cursorPosition = this.$refs["inputTextArea"].selectionStart;
       if (cursorPosition === 0) {
-        this.message = `${this.message} {${message}}`;
+        this.message = `${this.message} *{${message}}*`;
       } else {
         this.message = [
           this.message.slice(0, cursorPosition),
-          `{${message}}`,
+          `*{${message}}*`,
           this.message.slice(cursorPosition),
         ].join("");
       }
