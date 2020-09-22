@@ -92,6 +92,7 @@ export default {
       var { id } = jwt.verify(token, "secretKey");
 
       const { data } = await axios.get("users/messagesperweek", {
+        headers: { Authorization: "Bearer " + token },
         params: { id },
       });
 
