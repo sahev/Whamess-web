@@ -4,6 +4,7 @@ import home from '@/pages/home.vue';
 import Login from '@/pages/login.vue'
 import account from '@/pages/account.vue'
 import signup from '@/pages/signup.vue'
+import api from '@/pages/api.vue'
 
 Vue.use(Router)
 
@@ -35,6 +36,14 @@ const router = new Router({
       name: 'signup',
       component: signup,
     },
+    {
+      path: '/api',
+      name: 'api',
+      component: api,
+      meta: {
+        requiresAuth: true
+      }
+    },    
   ]
 })
 
